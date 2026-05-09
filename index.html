@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElderCare Tech - Nhắc nhở uống thuốc</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --light-blue: #e7f1ff;
+            --white: #ffffff;
+            --text-dark: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: var(--text-dark);
+        }
+
+        /* Taskbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--white);
+            padding: 15px 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .nav-links button {
+            background: none;
+            border: none;
+            margin-left: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-dark);
+            transition: 0.3s;
+        }
+
+        .nav-links button:hover {
+            color: var(--primary-blue);
+        }
+
+        /* Hero Image */
+        .hero {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(rgba(0,123,255,0.2), rgba(0,123,255,0.2)), 
+                        url('https://img.freepik.com/free-photo/doctor-holding-hand-senior-patient-hospital-bed_23-2148962341.jpg?w=1200');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Main Buttons */
+        .main-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px;
+            background: var(--white);
+        }
+
+        .action-btn {
+            padding: 20px 40px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 180px;
+        }
+
+        .btn-online { background-color: #ffefef; color: #d9534f; }
+        .btn-result { background-color: #e7f1ff; color: #007bff; }
+        .btn-search { background-color: #f0fff4; color: #28a745; }
+
+        .action-btn:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* Sections */
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: white; border-radius: 12px; display: none; }
+        .active { display: block; }
+
+        input, textarea {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
+        }
+
+        .submit-btn {
+            background: var(--primary-blue); color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer;
+        }
+
+        /* Chatbot */
+        #chatbot {
+            position: fixed; bottom: 20px; right: 20px; width: 300px; height: 400px;
+            background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .chat-header { background: var(--primary-blue); color: white; padding: 15px; font-weight: bold; }
+        .chat-content { flex: 1; padding: 10px; overflow-y: auto; font-size: 14px; }
+        .chat-input { display: flex; border-top: 1px solid #eee; }
+        .chat-input input { border: none; flex: 1; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">ElderCare Tech</div>
+        <div class="nav-links">
+            <button onclick="showSection('home')">Trang chủ</button>
+            <button>Sản phẩm</button>
+            <button>Giới thiệu</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Chăm Sóc Sức Khỏe Thế Hệ Mới</h1>
+    </div>
+
+    <section class="main-actions">
+        <button class="action-btn btn-online" onclick="showSection('contact')">
+            <i class="fas fa-video"></i> Khám Online
+        </button>
+        <button class="action-btn btn-search" onclick="showSection('search')">
+            <i class="fas fa-search"></i> Tra cứu
+        </button>
+        <button class="action-btn btn-result" onclick="checkAndShowResult()">
+            <i class="fas fa-file-medical"></i> Kết quả
+        </button>
+    </section>
+
+    <div id="admin" class="container active">
+        <h3>Hệ thống Quản lý Bệnh nhân </h3>
+        <p><small>*Vui lòng nhập dữ liệu tại đây trước khi tra cứu</small></p>
+        <input type="text" id="regName" placeholder="Họ và tên">
+        <input type="text" id="regPhone" placeholder="Số điện thoại">
+        <textarea id="regStatus" placeholder="Tình trạng bệnh"></textarea>
+        <input type="text" id="regMeds" placeholder="Đơn thuốc (VD: Paracetamol 500mg)">
+        <input type="text" id="regTime" placeholder="Giờ uống thuốc (VD: 08:00, 20:00)">
+        <button class="submit-btn" onclick="saveData()">Lưu vào hệ thống</button>
+    </div>
+
+    <div id="search" class="container">
+        <h3>Tra cứu thông tin</h3>
+        <input type="text" id="searchName" placeholder="Nhập họ tên chính xác">
+        <input type="text" id="searchPhone" placeholder="Nhập số điện thoại">
+        <button class="submit-btn" onclick="performSearch()">Xem kết quả</button>
+    </div>
+
+    <div id="result" class="container">
+        <h3 style="color: var(--primary-blue);">Kết Quả Điều Trị</h3>
+        <div id="resultContent" style="line-height: 1.6; background: var(--light-blue); padding: 20px; border-radius: 8px;">
+            </div>
+        <button class="submit-btn" style="margin-top:20px" onclick="showSection('search')">Quay lại</button>
+    </div>
+
+    <div id="contact" class="container">
+        <h3>Liên hệ Khám Online</h3>
+        <p>Bác sĩ đang sẵn sàng hỗ trợ bạn qua video call.</p>
+        <p><strong>Hotline:</strong> 0985455282 </p>
+        <button class="submit-btn">Bắt đầu cuộc gọi ngay</button>
+    </div>
+
+    <div id="chatbot">
+        <div class="chat-header"><i class="fas fa-robot"></i> Trợ lý ElderCare</div>
+        <div class="chat-content" id="chatBox">
+            <p>Chào bạn! Tôi là AI của ElderCare. Tôi có thể giúp gì cho bạn?</p>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatMsg" placeholder="Hỏi AI...">
+            <button onclick="sendChat()" style="border:none; background:none; color:var(--primary-blue); padding:10px; cursor:pointer"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        let currentPatient = null;
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+    
+        function saveData() {
+            const patient = {
+                name: document.getElementById('regName').value,
+                phone: document.getElementById('regPhone').value,
+                status: document.getElementById('regStatus').value,
+                meds: document.getElementById('regMeds').value,
+                time: document.getElementById('regTime').value
+            };
+            
+            if(!patient.name || !patient.phone) return alert("Vui lòng nhập đủ Tên và SĐT");
+            
+            localStorage.setItem(patient.name + patient.phone, JSON.stringify(patient));
+            alert("Đã lưu dữ liệu thành công!");
+            showSection('search');
+        }
+
+
+        function performSearch() {
+            const name = document.getElementById('searchName').value;
+            const phone = document.getElementById('searchPhone').value;
+            const data = localStorage.getItem(name + phone);
+
+            if (data) {
+                currentPatient = JSON.parse(data);
+                displayResult(currentPatient);
+                showSection('result');
+            } else {
+                alert("Không tìm thấy thông tin bệnh nhân. Vui lòng kiểm tra lại!");
+            }
+        }
+
+        function checkAndShowResult() {
+            if (currentPatient) {
+                showSection('result');
+            } else {
+                alert("Bạn cần thực hiện 'Tra cứu' trước khi xem kết quả!");
+                showSection('search');
+            }
+        }
+
+        function displayResult(p) {
+            const html = `
+                <p><strong>Bệnh nhân:</strong> ${p.name}</p>
+                <p><strong>SĐT:</strong> ${p.phone}</p>
+                <hr>
+                <p><strong>Tình trạng:</strong> ${p.status}</p>
+                <p><strong>Đơn thuốc:</strong> ${p.meds}</p>
+                <p style="color: red;"><strong>Giờ uống thuốc:</strong> <i class="far fa-clock"></i> ${p.time}</p>
+            `;
+            document.getElementById('resultContent').innerHTML = html;
+        }
+
+    
+        function sendChat() {
+            const msg = document.getElementById('chatMsg').value;
+            if(!msg) return;
+            
+            const box = document.getElementById('chatBox');
+            box.innerHTML += `<p style="text-align:right"><b>Bạn:</b> ${msg}</p>`;
+            
+            setTimeout(() => {
+                box.innerHTML += `<p><b>AI:</b> Chúc mừng bạn đã sử dụng ElderCare Tech. Tôi đã ghi nhận yêu cầu "${msg}" và sẽ phản hồi sớm nhất!</p>`;
+                box.scrollTop = box.scrollHeight;
+            }, 1000);
+            
+            document.getElementById('chatMsg').value = '';
+        }
+    </script>
+</body>
+</html>
